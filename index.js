@@ -2,6 +2,7 @@ const Discord = require('discord.js');
 const fs = require('fs');
 const bot = new Discord.Client();
 
+
 let bold = (message) => {
     return "**" + message + "**";
 }
@@ -15,21 +16,43 @@ let random = (message, contents) => {
 }
 
 let help = (message, contents) => {
-    const helpMessage = 'Prefix any commands with \'+\'\n----------------------------------------------------------------------------\nrandom - Gives a random verse\npraise - Get some praise';
-    message.channel.send(bold(helpMessage));
+    const helpEmbed = new Discord.MessageEmbed()
+        .setColor('#f60930')
+        .setTitle('Help')
+        .setDescription('Prefix any commands with \'+\'')
+        .addField(bold(':book: random'), 'Gives a random verse')
+        .addField(bold(':raised_hands: praise'), 'Get some praise');
+    message.channel.send(helpEmbed);
 }
 
 let praise = (message, contents) => {
-    if (contents.length > 1) {
-        message.channel.send(bold(`Praise ${contents[1]}!`));
-    } else {
-        message.channel.send(bold(`Praise ${message.author}!`));
-    }
+    let target = null;
+    target = (contents.length > 1) ? contents[1] : message.author;
+    message.channel.send(bold(`Praise ${target}! Hallelujah!`));
 }
 
-let condemn = (message, contents) => {
-    message.channel.send(bold(`I condemn ${contents[1]} to hell!`));
+let getOnlineUsers = () => {
+    let users = bot.users.cache;
+    let keys = Array.from(users.keys());
+    let online = []
+    for (let i = 0; i < keys.length; i++) {
+        let user = users.get(keys[i]);
+        if (user.presence.status == 'online' && user.bot == false) {
+            online.push(user);
+        }
+    }
+    return online;
 }
+
+let bless = (message, contents) => {
+    let onlineUsers = getOnlineUsers();
+    let blessString = "**10AM Students of the Lord...**\n";
+    for (let i = 0; i < onlineUsers.length; i++) {
+        blessString += `${onlineUsers[i]}, you have been *blessed* ! :pray:\n`
+    }
+    message.channel.send(blessString);
+}
+
 
 let getAvailableVerses = () => {
     const books = ['Genesis', 'Leviticus', 'Revelations', 'Exodus', 'Samuel 1', 'Samuel 2', 'Job', 'John', 'Matthew', 'Numbers', 'Deuteronomy', 'Kings 1', 'Kings 2', 'Psalms', 'Ezekial'];
@@ -52,7 +75,7 @@ var verses = getAvailableVerses();
 let commands = {'+random': random,
                 '+help': help,
                 '+praise': praise,
-                //'+condemn': condemn
+                '+bless': bless
                 }
 
 
@@ -64,4 +87,8 @@ bot.on('message', (message) => {
     }
 });
 
-bot.login('NzI1MDI0NTE1MzMxMTk0OTEw.XvI3lA.XrRdPMgVBsiVZR1GzYN_gy-TUMk');
+let getCredentials = () => {
+    return fs.readFileSync('credentials.txt', 'utf8');
+}
+
+bot.login(getCredentials());
