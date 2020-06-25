@@ -44,13 +44,13 @@ let getOnlineUsers = () => {
     return online;
 }
 
-let bless = (message, contents) => {
+let bless = (channel, contents) => {
     let onlineUsers = getOnlineUsers();
     let blessString = "**10AM Students of the Lord...**\n";
     for (let i = 0; i < onlineUsers.length; i++) {
         blessString += `${onlineUsers[i]}, you have been *blessed* ! :pray:\n`
     }
-    message.channel.send(blessString);
+    channel.send(blessString);
 }
 
 
@@ -71,6 +71,19 @@ let getAvailableVerses = () => {
     return verses;
 }
 
+let dailyBless = () => {
+    (loop = () => {
+        let now = new Date();
+        if (now.getUTCHours() === 14 && now.getUTCMinutes() === 0) {
+            bless(bot.channels.cache.get('724777890360852658'), null);
+        }
+        now = new Date();
+        let delay = 3600000 - (now % 3600000);
+        console.log(now % 3600000);
+        setTimeout(loop, delay);
+    })();
+}
+
 var verses = getAvailableVerses();
 let commands = {'+random': random,
                 '+help': help,
@@ -88,7 +101,8 @@ bot.on('message', (message) => {
 });
 
 let getCredentials = () => {
-    return fs.readFileSync('credentials.txt', 'utf8');
+    return fs.readFileSync('credentials.txt', 'utf8').trim();
 }
 
 bot.login(getCredentials());
+dailyBless();
